@@ -11,12 +11,15 @@ import java.util.Map;
 public class MenuData {
     public static String restaurantName = "스파르타 돈까스 2호점";
 
+    int orderNumber;
+
     Map<String, List<Menu>> menus;
     Map<String, List<Product>> products;
 
     public MenuData() {
         menus = new LinkedHashMap<>();
         products = new LinkedHashMap<>();
+        orderNumber = 0;
 
         Init();
     }
@@ -96,5 +99,9 @@ public class MenuData {
 
     public List<Product> getProducts(String key) {
         return products.get(key);
+    }
+
+    public int getOrderNumber() {
+        return ++orderNumber;
     }
 }
