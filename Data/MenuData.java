@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MenuData {
-    public static String restaurantName = "스파르타 돈까스";
+    public static String restaurantName = "스파르타 돈까스 2호점";
 
     Map<String, List<Menu>> menus;
     Map<String, List<Product>> products;
