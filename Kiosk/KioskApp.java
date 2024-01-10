@@ -1,6 +1,7 @@
 package Kiosk;
 
 import Data.CartData;
+import Data.Management;
 import Data.MenuData;
 import Menu.Menu;
 import Menu.Product;
@@ -10,8 +11,10 @@ import java.util.*;
 import static Data.MenuData.restaurantName;
 
 public class KioskApp {
-    static MenuData md;
-    static CartData cd;
+    MenuData md;
+    CartData cd;
+    Management management;
+
 
     Scanner sc = new Scanner(System.in);
     Map<Integer, Menu> controlKiosk = new HashMap<>();
@@ -24,6 +27,7 @@ public class KioskApp {
         md = new MenuData();
         cd = new CartData();
         cd.ClearCart();
+        management = new Management();
 
         ShowMain();
     }
@@ -48,16 +52,20 @@ public class KioskApp {
             System.out.print("\n입력 : ");
             int answer = sc.nextInt();
 
-            switch (controlKiosk.get(answer).getName()) {
-                case "주문하기":
-                    ShowOrder();
-                    break;
-                case "취소하기":
-                    ShowCancel();
-                    break;
-                default:
-                    ShowDetail(answer);
-                    break;
+            if (answer == 0) {
+                ShowManagement();
+            } else {
+                switch (controlKiosk.get(answer).getName()) {
+                    case "주문하기":
+                        ShowOrder();
+                        break;
+                    case "취소하기":
+                        ShowCancel();
+                        break;
+                    default:
+                        ShowDetail(answer);
+                        break;
+                }
             }
         } catch (Exception e) {
             WrongInput();
@@ -145,6 +153,8 @@ public class KioskApp {
     }
 
     void ShowClearOrder() {
+        management.addOrder(md.getOrderNumber(), new ArrayList<>(cd.GetCart().keySet().stream().toList()));
+
         cd.ClearCart();
 
         System.out.println("주문이 완료되었습니다!");
@@ -178,6 +188,119 @@ public class KioskApp {
         }
     }
 
+    void ShowManagement() {
+        System.out.println("[ 가게 관리 ]");
+        System.out.println("1. 주문 내역");
+        System.out.println("2. 가게 매출");
+        System.out.println("3. 메뉴 추가");
+        System.out.println("4. 메뉴 삭제\n");
+
+        System.out.print("입력 : ");
+        try {
+            int answer = sc.nextInt();
+
+            switch (answer) {
+                case 1:
+                    management.showHistory();
+                    break;
+                case 2:
+                    management.showSales();
+                    break;
+                case 3:
+                    ShowAddProduct();
+                    break;
+                case 4:
+                    ShowRemoveProduct();
+                    break;
+            }
+        } catch (Exception e) {
+            WrongInput();
+        }
+
+        try {
+            System.out.println("\n관리 메뉴로 돌아가려면 1을, 메인 화면으로 돌아가려면 2를 입력하세요.");
+            int answer = sc.nextInt();
+
+            if (answer == 1) {
+                ShowManagement();
+            } else {
+                ShowMainTimer(3000);
+            }
+        } catch (Exception e) {
+            WrongInput();
+        }
+    }
+
+    void ShowAddProduct() {
+        int index = 1;
+
+        System.out.println("상품을 추가할 메뉴를 골라주세요.");
+        List<String> menuNames = md.getProductMap().keySet().stream().toList();
+
+        for (String name : menuNames) {
+            System.out.println(index++ + ". " + name);
+        }
+
+        try {
+            System.out.print("입력 : ");
+            int answer = sc.nextInt();
+
+            String menuName = menuNames.get(answer - 1);
+
+            Product product = management.addNewProduct();
+
+            if (product != null) {
+                if (md.addProduct(menuName, product)) {
+                    System.out.println("\n[ " + product.getName() + " ] 상품이 추가되었습니다.");
+                } else {
+                    System.out.println("\n[ " + product.getName() + " ] 상품 추가에 실패했습니다.");
+                }
+            }
+        } catch (Exception e) {
+            WrongInput();
+        }
+    }
+
+    void ShowRemoveProduct() {
+        int index = 1;
+
+        System.out.println("상품을 제거할 메뉴를 골라주세요.");
+        List<String> menuNames = md.getProductMap().keySet().stream().toList();
+
+        for (String name : menuNames) {
+            System.out.println(index++ + ". " + name);
+        }
+
+        try {
+            System.out.print("입력 : ");
+            int answer = sc.nextInt();
+            sc.reset();
+
+            String menuName = menuNames.get(answer - 1);
+
+            System.out.println("\n제거할 상품을 골라주세요.");
+            index = 1;
+            for(Product p : md.getProducts(menuName)) {
+                System.out.println(index++ + ". [ " + p.getName() + " ] " + p.getPrice() + "원");
+            }
+
+            System.out.print("입력 : ");
+            answer = sc.nextInt();
+
+            Product product = md.getProducts(menuName).get(answer - 1);
+
+            if (product != null) {
+                if (md.removeProduct(menuName, product)) {
+                    System.out.println("\n[ " + product.getName() + " ] 상품이 제거되었습니다.");
+                } else {
+                    System.out.println("\n[ " + product.getName() + " ] 상품 제거에 실패했습니다.");
+                }
+            }
+        } catch (Exception e) {
+            WrongInput();
+        }
+    }
+
     void WrongInput() {
         System.out.println("\n잘못된 입력입니다.\n1초 후 메인 화면으로 돌아갑니다.\n");
         sc.next();
@@ -191,5 +314,19 @@ public class KioskApp {
         };
 
         timer.schedule(task, 1000);
+    }
+
+    void ShowMainTimer(long delay) {
+        System.out.println("\n" + delay / 1000 + "초 후 메인 화면으로 돌아갑니다.\n");
+
+        Timer timer = new Timer();
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                ShowMain();
+            }
+        };
+
+        timer.schedule(task, delay);
     }
 }

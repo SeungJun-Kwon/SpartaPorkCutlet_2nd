@@ -101,6 +101,34 @@ public class MenuData {
         return products.get(key);
     }
 
+    public boolean addProduct(String key, Product p) {
+        if(products.containsKey(key)) {
+            try {
+                products.get(key).add(p);
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    }
+
+    public boolean removeProduct(String key, Product p) {
+        if(products.containsKey(key)) {
+            try {
+                products.get(key).remove(p);
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    }
+
     public int getOrderNumber() {
         return ++orderNumber;
     }
